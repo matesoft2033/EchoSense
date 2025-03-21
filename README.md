@@ -1,27 +1,20 @@
-# EchoSense: Ultrasonic Distance Meter with LCD Display 🚀
+# Ultrasonic Distance Meter with LCD & Buzzer 🚀
 
-![Project Preview](WhatsApp%20Image%202025-03-21%20at%2020.06.47_77750526.jpg)
+## 📌 Overview
+This project is an **Ultrasonic Distance Meter** that displays distance readings on an LCD screen and triggers a buzzer when an object comes too close. It uses an **HC-SR04 ultrasonic sensor**, a **16x2 LCD with I2C**, and a **passive buzzer** for alerts.
 
-## 📌 Project Overview
-EchoSense is an **ultrasonic distance measurement system** that uses an **HC-SR04 sensor** to detect distances and displays the result on a **16x2 LCD screen**. Additionally, a **passive buzzer** provides feedback based on the measured distance.
-
-## 🔧 Features
-- 📏 **Accurate Distance Measurement** (30 cm - 400 cm)
-- 📟 **Real-time LCD Display**
-- 🔊 **Buzzer Alerts for Close Objects**
-- 🎛️ **User-friendly Interface**
-- ⚡ **Compact and Efficient Design**
+![Project Image](WhatsApp%20Image%202025-03-21%20at%2020.06.47_77750526.jpg)
 
 ## 🛠️ Components Used
-- **Arduino Board** 🖥️
-- **HC-SR04 Ultrasonic Sensor** 📡
-- **16x2 I2C LCD Display** 🖥️
-- **Passive Buzzer** 🔊
-- **Push Button** 🔘
-- **Jumper Wires** 🔌
-- **Breadboard** 🛠️
+- **Arduino Board**
+- **HC-SR04 Ultrasonic Sensor**
+- **16x2 LCD with I2C Module**
+- **Passive Buzzer**
+- **Push Button**
+- **Jumper Wires**
+- **Breadboard**
 
-## 📝 Code Explanation
+## 📜 Code
 ```cpp
 #include <LiquidCrystal_I2C.h>
 LiquidCrystal_I2C lcd(0x27, 16, 2);
@@ -33,6 +26,16 @@ LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 long T = 0;
 float S = 0;
+
+void buzzer_off() {
+  noTone(BUZZER_PIN);
+  delay(500);
+}
+
+void buzzer_on() {
+  tone(BUZZER_PIN, 1000);  
+  delay(500);        
+}
 
 void setup() {
   Serial.begin(9600);
@@ -46,8 +49,6 @@ void setup() {
 }
 
 void loop() {
-  digitalWrite(TRIG_PIN, LOW);
-  delayMicroseconds(2);
   digitalWrite(TRIG_PIN, HIGH);
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
@@ -55,11 +56,11 @@ void loop() {
   T = pulseIn(ECHO_PIN, HIGH);
   S = (T * 0.0343) / 2;
 
-  if (S > 400 || S < 30) {
-    S = 30; 
+  if (S > 400 || S <= 0) {
+    S = 400;
   }
 
-  int columnsToFill = map(S, 30, 400, 16, 0);
+  int columnsToFill = map(S, 20, 400, 16, 0);
   if (columnsToFill > 16) columnsToFill = 16;
 
   lcd.clear();
@@ -70,49 +71,43 @@ void loop() {
 
   lcd.setCursor(0, 1);
   for (int i = 0; i < columnsToFill; i++) {
-    lcd.print("\xFF");
+    lcd.print("\xFF");  // Full block character
+  }
+
+  if (S <= 15) {
+    buzzer_on();             
+  } 
+  else if (S >= 15){
+    buzzer_off();
+  }
+  while (digitalRead(11) == LOW){
+    buzzer_off();
   }
 
   Serial.print("Distance: ");
   Serial.print(S);
   Serial.println(" cm");
 
-  if (S <= 50) {
-    tone(BUZZER_PIN, 1000);
-  } else {
-    noTone(BUZZER_PIN);
-  }
-
   delay(1000);
 }
 ```
 
-## 🏗️ How to Build
-1. **Connect the HC-SR04 sensor** to the Arduino:
-   - VCC → 5V
-   - Trig → Pin 9
-   - Echo → Pin 10
-   - GND → GND
-2. **Connect the LCD display** using I2C:
-   - VCC → 5V
-   - GND → GND
-   - SDA → A4
-   - SCL → A5
-3. **Connect the passive buzzer** to Pin 3.
-4. **Upload the code** to your Arduino board.
-5. **Power it on and test the distance measurement!**
+## 🔍 How It Works
+1. The **ultrasonic sensor** measures distance by sending a pulse and waiting for its echo.
+2. The **LCD** displays the measured distance.
+3. A **bar graph** is drawn on the LCD to visualize proximity.
+4. If the distance is **15 cm or less**, the **buzzer sounds an alert**.
+5. The **push button** stops the buzzer when pressed.
 
-## 🚀 Future Improvements
-- 📊 **OLED Display Integration** for better visuals
-- 📱 **Bluetooth or Wi-Fi connectivity** for remote monitoring
-- 🔋 **Battery-powered version** for portability
+## 🎯 Applications
+- **Obstacle detection** 🚧
+- **Parking assistance systems** 🚗
+- **Security distance monitoring** 🛡️
 
-## 🤝 Contributing
-Feel free to **fork** this repository and contribute! PRs are welcome. 😊
+## 📌 Future Improvements
+- Add a **relay module** to control external devices.
+- Implement **adjustable threshold values** via a potentiometer.
+- Display **custom warning messages** on the LCD.
 
-## 📜 License
-This project is open-source under the **MIT License**.
-
----
-🔹 *Developed with passion by Mates!* 💡
+📢 Feel free to **contribute** or **modify** the project! 🛠️✨
 
