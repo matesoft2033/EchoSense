@@ -71,7 +71,7 @@ void loop() {
 
   lcd.setCursor(0, 1);
   for (int i = 0; i < columnsToFill; i++) {
-    lcd.print("\xFF");  // Full block character
+    lcd.print("\xFF");
   }
 
   if (S <= 15) {
